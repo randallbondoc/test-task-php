@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MailChimp;
 
 use App\Database\Entities\MailChimp\MailChimpList;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\MailChimpTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +14,7 @@ use Mailchimp\Mailchimp;
 
 class ListsController extends Controller
 {
+    use MailChimpTrait;
     /**
      * @var \Mailchimp\Mailchimp
      */
@@ -54,12 +56,32 @@ class ListsController extends Controller
         }
 
         try {
-            // Save list into db
-            $this->saveEntity($list);
+//            // Save list into db
+//            $this->saveEntity($list);
+//            // Save list into MailChimp
+//            $response = $this->mailChimp->post('lists', $list->toMailChimpArray());
+//            // Set MailChimp id on the list and save list into db
+//            $this->saveEntity($list->setMailChimpId($response->get('id')));
+
             // Save list into MailChimp
-            $response = $this->mailChimp->post('lists', $list->toMailChimpArray());
-            // Set MailChimp id on the list and save list into db
-            $this->saveEntity($list->setMailChimpId($response->get('id')));
+            $data['url'] = $this->generateURL('lists/' . $list->getMailChimpId());
+            $data['request_type'] = 'POST';
+            $data['data'] = $list->toMailChimpArray();
+            $response = json_decode($this->request($data));
+
+            // Check response
+            if (isset($response->status) && !is_string($response->status) && $response->status != 200) {
+                if (isset($response->errors)) {
+                    $errors = $this->parseError($response);
+                    return $this->errorResponse(['message' => $errors]);
+                }
+                return $this->errorResponse(['message' => $response->title]);
+            } else {
+                // Save list into db
+                $this->saveEntity($list);
+                // Set MailChimp id on the list and save list into db
+                $this->saveEntity($list->setMailChimpId($response->id));
+            }
         } catch (Exception $exception) {
             // Return error response if something goes wrong
             return $this->errorResponse(['message' => $exception->getMessage()]);
@@ -88,15 +110,33 @@ class ListsController extends Controller
         }
 
         try {
-            // Remove list from database
-            $this->removeEntity($list);
+//            // Remove list from database
+//            $this->removeEntity($list);
+//            // Remove list from MailChimp
+//            $this->mailChimp->delete(\sprintf('lists/%s', $list->getMailChimpId()));
+
             // Remove list from MailChimp
-            $this->mailChimp->delete(\sprintf('lists/%s', $list->getMailChimpId()));
+            $data['url'] = $this->generateURL('lists/' . $list->getMailChimpId());
+            $data['request_type'] = 'DELETE';
+            $data['data'] = $list->toMailChimpArray();
+            $response = json_decode($this->request($data));
+
+            // Check response
+            if (isset($response->status) && !is_string($response->status) && $response->status != 200) {
+                if (isset($response->errors)) {
+                    $errors = $this->parseError($response);
+                    return $this->errorResponse(['message' => $errors]);
+                }
+                return $this->errorResponse(['message' => $response->title]);
+            } else {
+                // Remove list from database
+                $this->removeEntity($list);
+            }
         } catch (Exception $exception) {
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
 
-        return $this->successfulResponse([]);
+        return $this->successfulResponse(['message' => 'Successfully deleted!']);
     }
 
     /**
@@ -156,10 +196,30 @@ class ListsController extends Controller
         }
 
         try {
-            // Update list into database
-            $this->saveEntity($list);
-            // Update list into MailChimp
-            $this->mailChimp->patch(\sprintf('lists/%s', $list->getMailChimpId()), $list->toMailChimpArray());
+//            // Update list into database
+//            $this->saveEntity($list);
+//            // Update list into MailChimp
+//            $this->mailChimp->patch(\sprintf('lists/%s', $list->getMailChimpId()), $list->toMailChimpArray());
+
+            // Save list into MailChimp
+            $data['url'] = $this->generateURL('lists/' . $list->getMailChimpId() . '/lists/' . $list->getMailChimpId());
+            $data['request_type'] = 'PATCH';
+            $data['data'] = $list->toMailChimpArray();
+            $response = json_decode($this->request($data));
+
+            // Check response
+            if (isset($response->status) && !is_string($response->status) && $response->status != 200) {
+                if (isset($response->errors)) {
+                    $errors = $this->parseError($response);
+                    return $this->errorResponse(['message' => $errors]);
+                }
+                return $this->errorResponse(['message' => $response->title]);
+            } else {
+                // Save list into db
+                $this->saveEntity($list);
+                // Set MailChimp id on the list and save list into db
+                $this->saveEntity($list->setMailChimpId($response->id));
+            }
         } catch (Exception $exception) {
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }

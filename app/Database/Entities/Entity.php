@@ -35,7 +35,13 @@ abstract class Entity
 
             // If setter for current property exist then call it to set value
             if (\method_exists($this, $setter)) {
-                $this->$setter($value);
+                if ($setter == 'setEmailTypeOption') {
+                    $this->$setter(filter_var($value, FILTER_VALIDATE_BOOLEAN));
+                } else if ($setter == 'setUseArchiveBar') {
+                    $this->$setter(filter_var($value, FILTER_VALIDATE_BOOLEAN));
+                } else {
+                    $this->$setter($value);
+                }
             }
         }
 
