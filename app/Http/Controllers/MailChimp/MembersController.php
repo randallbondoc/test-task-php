@@ -80,9 +80,9 @@ class MembersController extends Controller
             if (isset($response->status) && !is_string($response->status) && $response->status != 200) {
                 if (isset($response->errors)) {
                     $errors = $this->parseError($response);
-                    return $this->errorResponse(['message' => $errors]);
+                    return $this->errorResponse(['message' => $errors], $response->status);
                 }
-                return $this->errorResponse(['message' => $response->title]);
+                return $this->errorResponse(['message' => $response->title], $response->status);
             } else {
                 // Save member into db
                 $this->saveEntity($member);
@@ -109,7 +109,7 @@ class MembersController extends Controller
         /** @var \App\Database\Entities\MailChimp\MailChimpMember|null $member */
         $member = $this->entityManager->getRepository(MailChimpMember::class)->findOneBy([
             'listId' => $listId,
-            'mailChimpId' => $memberId
+            'id' => $memberId
         ]);
 
         if ($member === null) {
@@ -131,7 +131,7 @@ class MembersController extends Controller
 
         try {
             // Remove list from MailChimp
-            $data['url'] = $this->generateURL('lists/' . $list->getMailChimpId() . '/members/' . $member->getMailChimpId());
+            $data['url'] = $this->generateURL('lists/' . $list->getMailChimpId() . '/members/' . md5(strtolower($member->getEmailAddress())));
             $data['request_type'] = 'DELETE';
             $data['data'] = $member->toMailChimpArray();
             $response = json_decode($this->request($data));
@@ -198,7 +198,7 @@ class MembersController extends Controller
         /** @var \App\Database\Entities\MailChimp\MailChimpMember|null $member */
         $member = $this->entityManager->getRepository(MailChimpMember::class)->findOneBy([
             'listId' => $listId,
-            'mailChimpId' => $memberId
+            'id' => $memberId
         ]);
 
         // Get list
@@ -245,7 +245,7 @@ class MembersController extends Controller
         /** @var \App\Database\Entities\MailChimp\MailChimpMember|null $member */
         $member = $this->entityManager->getRepository(MailChimpMember::class)->findOneBy([
             'listId' => $listId,
-            'mailChimpId' => $memberId
+            'id' => $memberId
         ]);
 
         if ($member === null) {
@@ -255,6 +255,7 @@ class MembersController extends Controller
             );
         }
 
+        $email_address = $member->getEmailAddress();
         // Update member properties
         $member->fill($request->all());
 
@@ -271,7 +272,7 @@ class MembersController extends Controller
 
         try {
             // Save member into MailChimp
-            $data['url'] = $this->generateURL('lists/' . $list->getMailChimpId() . '/members/' . $member->getMailChimpId());
+            $data['url'] = $this->generateURL('lists/' . $list->getMailChimpId() . '/members/' . md5(strtolower($email_address)));
             $data['request_type'] = 'PATCH';
             $data['data'] = $member->toMailChimpArray();
             $response = json_decode($this->request($data));
