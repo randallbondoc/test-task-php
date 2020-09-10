@@ -2,22 +2,33 @@
 
     I created and saved screenshots of Postman test and phpunit test. It is saved under Screenshots directory.
 
-    For some phpunit tests, there are some failed tests only because of unmatching error message in assertion but is working fine.
+    For some phpunit tests, there are some failed tests only because of unmatching error message in assertion but is
+    working fine.
 
-    For the mailchimp plugin being used, I had some issues with regards to curl error 60: SSL certificate even though I had it setup on my localhost. I have the cacert.pem and mods enabled to be able to use curl but unfortunately, plugin curl is not working when I test it on Postman that is why i used the traditional curl method. It also came to my mind to use a different plugin but I am unable to install it because of dependencies and requirements with PHP versions. It would take my time installing and arrived in just using traditional curl.
+    For the mailchimp plugin being used, I had some issues with regards to curl error 60: SSL certificate even though I
+    had it setup on my localhost. I have the cacert.pem and mods enabled to be able to use curl but unfortunately,
+    plugin curl is not working when I test it on Postman that is why i used the traditional curl method. It also came to
+     my mind to use a different plugin but I am unable to install it because of dependencies and requirements with PHP
+     versions. It would take my time installing and arrived in just using traditional curl.
 
-    I used Trait to be able to reuse set of methods freely in several independent classes. Methods in traits are for the curl request, generation of mailchimp URLs, and parsing of errors in mailchimp exceptions.
+    I used Trait to be able to reuse set of methods freely in several independent classes. Methods in traits are for the
+     curl request, generation of mailchimp URLs, and parsing of errors in mailchimp exceptions.
 
-    Also, some List methods are not working due to my mailchimp account being free. There are limitations on free mailchimp account that I cannot add more lists/audience. But as far as the scope is concerned, I managed to have the members CRUD functions working.
+    Also, some List methods are not working due to my mailchimp account being free. There are limitations on free
+    mailchimp account that I cannot add more lists/audience. But as far as the scope is concerned, I managed to have the
+     members CRUD functions working.
 
-    I also made a static mailchimp list id in the .env file used in phpunit testing because my CRUD methods for members requires list id in queries.
+    I also made a static mailchimp list id in the .env file used in phpunit testing because my CRUD methods for members
+    requires list id in queries.
 
-    For Postman requests, I use x-www-form-urlencoded format because there are some issues on Postman that it doesn't pass values when using PATCH or PUT requests.
+    For Postman requests, I use x-www-form-urlencoded format because there are some issues on Postman that it doesn't
+    pass values when using PATCH or PUT requests.
 
 
     Steps:
     1. Clone or download repository (https://github.com/randallbondoc/test-task-php).
-    2. Run composer install (composer install). It happens to me that I am experiencing memory limit issues on my machine that is why I use this (php -d memory_limit=-1 D:\composer\composer.phar install).
+    2. Run composer install (composer install). It happens to me that I am experiencing memory limit issues on my
+        machine that is why I use this (php -d memory_limit=-1 D:\composer\composer.phar install).
     3. Create a database named "lr_flexisource_testtask_dv". Run migration and seeder (php artisan migrate:refresh --seed).
     4. Serve project (php -S localhost:8000 -t public).
     5. Open Postman.
@@ -31,6 +42,7 @@
     status:subscribed
 
 
-    To test update/delete a member, copy "id" field from table "mail_chimp_members" and paste in the url (http://localhost:8000/mailchimp/lists/6e6dd766-f1ce-11ea-9e92-1831bf96e34c/members/<id field>)
+    To test update/delete a member, copy "id" field from table "mail_chimp_members" and paste in the url
+    (http://localhost:8000/mailchimp/lists/6e6dd766-f1ce-11ea-9e92-1831bf96e34c/members/<id field>)
 
     Use PUT method for update a member.
