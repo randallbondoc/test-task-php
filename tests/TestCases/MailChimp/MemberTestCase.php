@@ -23,7 +23,7 @@ abstract class MemberTestCase extends WithDatabaseTestCase
      * @var array
      */
     protected static $memberData = [
-        'email_address' => 'johndoe18@gmail.com',
+        'email_address' => 'johndoe24@gmail.com',
         'status' => 'subscribed',
         'list_id' => '6e6dd766-f1ce-11ea-9e92-1831bf96e34c',
     ];
@@ -44,11 +44,11 @@ abstract class MemberTestCase extends WithDatabaseTestCase
     public function tearDown(): void
     {
         /** @var Mailchimp $mailChimp */
-        $mailChimp = $this->app->make(Mailchimp::class);
+//        $mailChimp = $this->app->make(Mailchimp::class);
 
         foreach ($this->createdMemberIds as $memberId) {
             // Delete member on MailChimp after test
-            $mailChimp->delete(\sprintf('lists/' . env('MAILCHIMP_LIST_ID') . '/members/%s', $memberId));
+            $this->delete(\sprintf('/mailchimp/lists/' . env('MAILCHIMP_LIST_ID') . '/members/%s', $memberId));
         }
 
         parent::tearDown();

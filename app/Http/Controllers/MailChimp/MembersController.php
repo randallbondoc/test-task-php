@@ -82,7 +82,7 @@ class MembersController extends Controller
                     $errors = $this->parseError($response);
                     return $this->errorResponse(['message' => $errors], $response->status);
                 }
-                return $this->errorResponse(['message' => $response->title], $response->status);
+                return $this->errorResponse(['message' => $response->title . ($response->detail ? ': ' . $response->detail : '') ], $response->status);
             } else {
                 // Save member into db
                 $this->saveEntity($member);
@@ -142,7 +142,7 @@ class MembersController extends Controller
                     $errors = $this->parseError($response);
                     return $this->errorResponse(['message' => $errors]);
                 }
-                return $this->errorResponse(['message' => $response->title]);
+                return $this->errorResponse(['message' => $response->title . ($response->detail ? ': ' . $response->detail : '') ]);
             } else {
                 // Remove list from database
                 $this->removeEntity($member);
@@ -213,7 +213,7 @@ class MembersController extends Controller
 
         if ($member === null) {
             return $this->errorResponse(
-                ['message' => \sprintf('MailChimpMember not found for [%s]', $listId)],
+                ['message' => \sprintf('MailChimpMember[%s] not found', $memberId)],
                 404
             );
         }
@@ -283,7 +283,7 @@ class MembersController extends Controller
                     $errors = $this->parseError($response);
                     return $this->errorResponse(['message' => $errors]);
                 }
-                return $this->errorResponse(['message' => $response->title]);
+                return $this->errorResponse(['message' => $response->title . ($response->detail ? ': ' . $response->detail : '') ]);
             } else {
                 // Save member into db
                 $this->saveEntity($member);
