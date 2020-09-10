@@ -23,17 +23,26 @@ class MembersController extends Controller
      */
     private $mailChimp;
 
+
+    /**
+     * @var string
+     */
+    private $urlListId;
+
     /**
      * MembersController constructor.
      *
      * @param \Doctrine\ORM\EntityManagerInterface $entityManager
      * @param \Mailchimp\Mailchimp $mailchimp
+     * @param \Illuminate\Http\Request $request
      */
-    public function __construct(EntityManagerInterface $entityManager, Mailchimp $mailchimp)
+    public function __construct(EntityManagerInterface $entityManager, Mailchimp $mailchimp, Request $request)
     {
         parent::__construct($entityManager);
 
         $this->mailChimp = $mailchimp;
+
+        $this->urlListId = $request->segment(3);
     }
 
     /**
@@ -45,6 +54,14 @@ class MembersController extends Controller
      */
     public function create(Request $request): JsonResponse
     {
+        $list_exist = $this->checkListIfExist();
+        if (!$list_exist) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpList[%s] not found', $this->urlListId)],
+                404
+            );
+        }
+
         // Instantiate entity
         $member = new MailChimpMember($request->all());
 
@@ -106,6 +123,14 @@ class MembersController extends Controller
      */
     public function remove(string $listId, string $memberId): JsonResponse
     {
+        $list_exist = $this->checkListIfExist();
+        if (!$list_exist) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpList[%s] not found', $this->urlListId)],
+                404
+            );
+        }
+
         /** @var \App\Database\Entities\MailChimp\MailChimpMember|null $member */
         $member = $this->entityManager->getRepository(MailChimpMember::class)->findOneBy([
             'listId' => $listId,
@@ -163,6 +188,14 @@ class MembersController extends Controller
      */
     public function showAll(string $listId): JsonResponse
     {
+        $list_exist = $this->checkListIfExist();
+        if (!$list_exist) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpList[%s] not found', $this->urlListId)],
+                404
+            );
+        }
+
         /** @var \App\Database\Entities\MailChimp\MailChimpMember|null $members */
         $members = $this->entityManager->getRepository(MailChimpMember::class)->findBy(['listId' => $listId]);
 
@@ -195,6 +228,14 @@ class MembersController extends Controller
      */
     public function show(string $listId, string $memberId): JsonResponse
     {
+        $list_exist = $this->checkListIfExist();
+        if (!$list_exist) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpList[%s] not found', $this->urlListId)],
+                404
+            );
+        }
+
         /** @var \App\Database\Entities\MailChimp\MailChimpMember|null $member */
         $member = $this->entityManager->getRepository(MailChimpMember::class)->findOneBy([
             'listId' => $listId,
@@ -232,6 +273,14 @@ class MembersController extends Controller
      */
     public function update(Request $request, string $listId, string $memberId): JsonResponse
     {
+        $list_exist = $this->checkListIfExist();
+        if (!$list_exist) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimpList[%s] not found', $this->urlListId)],
+                404
+            );
+        }
+
         // Get list
         $list = $this->entityManager->getRepository(MailChimpList::class)->find($listId);
 
@@ -296,5 +345,16 @@ class MembersController extends Controller
         }
 
         return $this->successfulResponse($member->toArray());
+    }
+
+    private function checkListIfExist()
+    {
+        // Get list from member list id
+        $list = $this->entityManager->getRepository(MailChimpList::class)->find($this->urlListId);
+
+        if ($list === null) {
+            return false;
+        }
+        return true;
     }
 }
